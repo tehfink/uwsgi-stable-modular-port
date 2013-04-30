@@ -5,7 +5,7 @@
 # $FreeBSD: www/uwsgi/Makefile 313879 2013-03-11 12:50:46Z demon $
 #
 
-PORTNAME=	uwsgi-lts-modular
+PORTNAME=	uwsgi
 PORTVERSION=	1.9.8
 CATEGORIES=	www python
 MASTER_SITES=	http://projects.unbit.it/downloads/
@@ -129,7 +129,7 @@ PLIST_SUB+=	NAGIOS="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPHP}
-LIB_DEPENDS+=	php:${PORTSDIR}/lang/php5
+USE_PHP= yes
 UWSGI_PLUGINS+= php,
 PLIST_SUB+=	PHP=""
 .else
