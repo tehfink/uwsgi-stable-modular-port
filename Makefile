@@ -5,7 +5,7 @@
 # $FreeBSD: www/uwsgi/Makefile 313879 2013-03-11 12:50:46Z demon $
 #
 
-PORTNAME=	uwsgi
+PORTNAME=	uwsgi-lts-modular
 PORTVERSION=	1.9.8
 CATEGORIES=	www python
 MASTER_SITES=	http://projects.unbit.it/downloads/
@@ -19,7 +19,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 MAKE_JOBS_SAFE=	yes
 
 USE_GNOME=	libxml2
-USE_PYTHON=	yes
+BUILD_DEPENDS=	python:${PORTSDIR}/lang/python
 USE_RC_SUBR=	uwsgi
 
 OPTIONS_DEFINE= CACHE CARBON CGI CHEAPER_BUSYNESS FASTROUTER GEVENT GREENLET HTTP LOGFILE LOGSOCKET NAGIOS PHP PING PSGI PYTHON RACK RRDTOOL SYSLOG UGREEN ZERGPOOL
@@ -49,6 +49,8 @@ OPTIONS_DEFAULT=PYTHON SYSLOG HTTP
 
 .include <bsd.port.options.mk>
 
+CONFLICTS=	uwsgi-1.[0-9]*
+
 .if ${PORT_OPTIONS:MCACHE}
 UWSGI_PLUGINS+= cache,
 PLIST_SUB+=	CACHE=""
@@ -63,14 +65,12 @@ PLIST_SUB+=	CARBON=""
 PLIST_SUB+=	CARBON="@comment "
 .endif
 
-
 .if ${PORT_OPTIONS:MCGI}
 UWSGI_PLUGINS+= cgi,
 PLIST_SUB+=	CGI=""
 .else
 PLIST_SUB+=	CGI="@comment "
 .endif
-
 
 .if ${PORT_OPTIONS:MCHEAPER_BUSYNESS}
 UWSGI_PLUGINS+= cheaper_busyness,
@@ -129,6 +129,7 @@ PLIST_SUB+=	NAGIOS="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPHP}
+LIB_DEPENDS+=	php:${PORTSDIR}/lang/php5
 UWSGI_PLUGINS+= php,
 PLIST_SUB+=	PHP=""
 .else
@@ -143,6 +144,7 @@ PLIST_SUB+=	PING="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPSGI}
+USE_PERL=	yes
 UWSGI_PLUGINS+= psgi,
 PLIST_SUB+=	PSGI=""
 .else
@@ -150,6 +152,7 @@ PLIST_SUB+=	PSGI="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPYTHON}
+USE_PYTHON=	yes
 UWSGI_PLUGINS+= python,
 PLIST_SUB+=	PYTHON=""
 .else
@@ -157,6 +160,7 @@ PLIST_SUB+=	PYTHON="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MRACK}
+USE_RUBY=	yes
 UWSGI_PLUGINS+= rack,
 PLIST_SUB+=	RACK=""
 .else
@@ -164,6 +168,7 @@ PLIST_SUB+=	RACK="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MRRDTOOL}
+LIB_DEPENDS+= rrd:${PORTSDIR}/databases/rrdtool
 UWSGI_PLUGINS+= rrdtool,
 PLIST_SUB+=	RRDTOOL=""
 .else
