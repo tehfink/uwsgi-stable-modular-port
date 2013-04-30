@@ -1,0 +1,24 @@
+bin/uwsgi
+%%PYTHON_SITELIBDIR%%/uwsgidecorators.py
+%%CACHE%%lib/uwsgi/cache_plugin.so
+%%CARBON%%lib/uwsgi/carbon_plugin.so
+%%CGI%%lib/uwsgi/cgi_plugin.so
+%%CHEAPER_BUSYNESS%%lib/uwsgi/cheaper_busyness_plugin.so
+%%FASTROUTER%%lib/uwsgi/fastrouter_plugin.so
+%%GEVENT%%lib/uwsgi/gevent_plugin.so
+%%GREENLET%%lib/uwsgi/greenlet_plugin.so
+%%HTTP%%lib/uwsgi/http_plugin.so
+%%LOGFILE%%lib/uwsgi/logfile_plugin.so
+%%LOGSOCKET%%lib/uwsgi/logsocket_plugin.so
+%%NAGIOS%%lib/uwsgi/nagios_plugin.so
+%%PHP%%lib/uwsgi/php_plugin.so
+%%PING%%lib/uwsgi/ping_plugin.so
+%%PSGI%%lib/uwsgi/psgi_plugin.so
+%%PYTHON%%lib/uwsgi/python_plugin.so
+%%RACK%%lib/uwsgi/rack_plugin.so
+%%RRDTOOL%%lib/uwsgi/rrdtool_plugin.so
+%%SYSLOG%%lib/uwsgi/syslog_plugin.so
+%%UGREEN%%lib/uwsgi/ugreen_plugin.so
+%%ZERGPOOL%%lib/uwsgi/zergpool_plugin.so
+@exec mkdir -p %D/lib/uwsgi
+@dirrm lib/uwsgi
