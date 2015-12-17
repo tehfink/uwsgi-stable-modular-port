@@ -1,12 +1,9 @@
-# New ports collection makefile for:	uwsgi
-#1;2602;0c Date created:				23 May 2010
-# Whom:					Daniel Gerzo <danger@FreeBSD.org>
-#
-# $FreeBSD: www/uwsgi/Makefile 313879 2013-03-11 12:50:46Z demon $
-#
+# Created by: Daniel Gerzo <danger@FreeBSD.org>
+# $FreeBSD: head/www/uwsgi/Makefile 400449 2015-10-29 09:36:52Z koobs $
 
 PORTNAME=	uwsgi
-PORTVERSION=	1.9.8
+PORTVERSION=	2.0.11.2
+PORTREVISION=	2
 CATEGORIES=	www python
 MASTER_SITES=	http://projects.unbit.it/downloads/
 
@@ -16,43 +13,40 @@ COMMENT=	Developer-friendly WSGI server which uses uwsgi protocol
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-MAKE_JOBS_SAFE=	yes
-
-USE_GNOME=	libxml2
-BUILD_DEPENDS=	python:${PORTSDIR}/lang/python
+USES=		python
+USE_PYTHON=	concurrent distutils
 USE_RC_SUBR=	uwsgi
 
-OPTIONS_DEFINE= CACHE CARBON CGI CHEAPER_BUSYNESS FASTROUTER GEVENT GREENLET HTTP LOGFILE LOGSOCKET NAGIOS PHP PING PSGI PYTHON RACK RRDTOOL SYSLOG UGREEN ZERGPOOL
+LDFLAGS+=	"-L${LOCALBASE}/lib"
+MAKE_ENV+=	CPUCOUNT=${MAKE_JOBS_NUMBER}
+#MAKE_ARGS+=	UWSGI_EMBED_PLUGINS=cgi
+
+PYSETUP=			uwsgiconfig.py
+PYDISTUTILS_BUILD_TARGET=	--build modular
+PYDISTUTILS_BUILDARGS=		--verbose
+
+OPTIONS_DEFINE= CACHE CARBON CGI CHEAPER_BUSYNESS FASTROUTER HTTP LOGFILE LOGSOCKET  PYTHON SYSLOG  ZERGPOOL
 
 CACHE_DESC= uwsgi internal cache plugin
 CARBON_DESC= uwsgi plugin to report stats to carbon backend
 CHEAPER_BUSYNESS_DESC= Alternative uwsgi algorithm for auto-scaling number of workers
 CGI_DESC= uwsgi plugin to run basic cgi scripts
 FASTROUTER_DESC= a uwsgi load-balancer plugin
-GEVENT_DESC= add python gevent to uwsgi
-GREENLET_DESC= add python greenlet to uwsgi
 HTTP_DESC= add ability to talk to uwsgi processes via http
 LOGFILE_DESC= add ability to log uwsgi events to a file
 LOGSOCKET_DESC= add ability to log uwsgi events to a socket
-NAGIOS_DESC= add nagios integration to uwsgi
-PHP_DESC= uwsgi php plugin, use embedded option to build php for best performance
-PING_DESC= uwsgi ping plugin
-PSGI_DESC= uwsgi psgi plugin for perl
 PYTHON_DESC= uwsgi python plugin
-RACK_DESC= uwsgi ruby plugin
-RRDTOOL_DESC= uwsgi plugin to report stats to an rrd backend
 SYSLOG_DESC= add ability to log uwsgi events to syslog
-UGREEN_DESC= uwsgi async plugin inspired by python greenlet
 ZERGPOOL_DESC= a uwsgi method of auto-scaling workers
 
 OPTIONS_DEFAULT=PYTHON SYSLOG HTTP
 
 .include <bsd.port.options.mk>
 
-CONFLICTS=	uwsgi-1.[0-9]*
+#CONFLICTS=	uwsgi-1.[0-9]*
 
 .if ${PORT_OPTIONS:MCACHE}
-UWSGI_PLUGINS+= cache,
+UWSGI_PLUGINS+=cache,
 PLIST_SUB+=	CACHE=""
 .else
 PLIST_SUB+=	CACHE="@comment "
@@ -129,11 +123,17 @@ PLIST_SUB+=	NAGIOS="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPHP}
-USE_PHP= yes
+PHP_USE=  php= session
+PHP_LIB_DEPENDS= php5.so:${PORTSDIR}/lang/php5
+#LDFLAGS+= "-Wl,-rpath,${PREFIX}/lib/php/20131226"
+#LDFLAGS+= "-lphp5"
+#LDFLAGS+= "-L${PREFIX}/lib/php/20131226"
+#LDFLAGS+= "${PREFIX}/lib/php/20131226/session.so"
 UWSGI_PLUGINS+= php,
 PLIST_SUB+=	PHP=""
 .else
 PLIST_SUB+=	PHP="@comment "
+
 .endif
 
 .if ${PORT_OPTIONS:MPING}
@@ -144,7 +144,7 @@ PLIST_SUB+=	PING="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPSGI}
-USE_PERL=	yes
+PERL_USE=	perl=yes
 UWSGI_PLUGINS+= psgi,
 PLIST_SUB+=	PSGI=""
 .else
@@ -152,7 +152,7 @@ PLIST_SUB+=	PSGI="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MPYTHON}
-USE_PYTHON=	yes
+PYTHON_USE=	python=yes
 UWSGI_PLUGINS+= python,
 PLIST_SUB+=	PYTHON=""
 .else
@@ -160,7 +160,7 @@ PLIST_SUB+=	PYTHON="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MRACK}
-USE_RUBY=	yes
+RACK_USE= _ruby=yes
 UWSGI_PLUGINS+= rack,
 PLIST_SUB+=	RACK=""
 .else
@@ -168,7 +168,7 @@ PLIST_SUB+=	RACK="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MRRDTOOL}
-LIB_DEPENDS+= rrd:${PORTSDIR}/databases/rrdtool
+RRDTOOL_LIB_DEPENDS= rrd.so:${PORTSDIR}/databases/rrdtool
 UWSGI_PLUGINS+= rrdtool,
 PLIST_SUB+=	RRDTOOL=""
 .else
@@ -197,14 +197,17 @@ PLIST_SUB+=	ZERGPOOL="@comment "
 .endif
 
 post-patch:
-	${REINPLACE_CMD} -e 's|python|${PYTHON_CMD}|' ${WRKSRC}/Makefile 
-	${REINPLACE_CMD} -e 's|--build|--build modular|' ${WRKSRC}/Makefile
 	${REINPLACE_CMD} -e 's|^plugins = |plugins = ${UWSGI_PLUGINS}|' ${WRKSRC}/buildconf/modular.ini
 	${REINPLACE_CMD} -e 's|,$$||g' ${WRKSRC}/buildconf/modular.ini
+
+do-configure:
+	@${DO_NADA}
+
 do-install:
-	${MKDIR} /usr/local/lib/uwsgi
-	@${INSTALL_PROGRAM} ${WRKSRC}/${PORTNAME} ${PREFIX}/bin/
-	@${INSTALL_DATA}  ${WRKSRC}/uwsgidecorators.py ${PYTHON_SITELIBDIR}
-	@${INSTALL_LIB} ${WRKSRC}/plugins/*.so ${PREFIX}/lib/${PORTNAME}
+	${INSTALL_PROGRAM} ${WRKSRC}/${PORTNAME} ${STAGEDIR}${PREFIX}/bin/
+	${MKDIR} ${STAGEDIR}${PREFIX}/lib/${PORTNAME}
+	${MKDIR} ${STAGEDIR}${PYTHONPREFIX_SITELIBDIR}
+	${INSTALL_DATA}  ${WRKSRC}/uwsgidecorators.py ${STAGEDIR}${PYTHONPREFIX_SITELIBDIR}
+	${INSTALL_LIB} ${WRKSRC}/plugins/*.so ${STAGEDIR}${PREFIX}/lib/${PORTNAME}
 
 .include <bsd.port.mk>
