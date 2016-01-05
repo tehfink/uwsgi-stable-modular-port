@@ -1,9 +1,9 @@
 # Created by: Daniel Gerzo <danger@FreeBSD.org>
-# $FreeBSD: head/www/uwsgi/Makefile 400449 2015-10-29 09:36:52Z koobs $
+# $FreeBSD: head/www/uwsgi/Makefile 405059 2016-01-02 09:59:35Z demon $
 
 PORTNAME=	uwsgi
-PORTVERSION=	2.0.11.2
-PORTREVISION=	2
+PORTVERSION=	2.0.12
+PORTREVISION=	1
 CATEGORIES=	www python
 MASTER_SITES=	http://projects.unbit.it/downloads/
 
@@ -14,12 +14,12 @@ LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
 USES=		python
-USE_PYTHON=	concurrent distutils
+USE_PYTHON=	distutils
 USE_RC_SUBR=	uwsgi
 
 LDFLAGS+=	"-L${LOCALBASE}/lib"
 MAKE_ENV+=	CPUCOUNT=${MAKE_JOBS_NUMBER}
-#MAKE_ARGS+=	UWSGI_EMBED_PLUGINS=cgi
+
 
 PYSETUP=			uwsgiconfig.py
 PYDISTUTILS_BUILD_TARGET=	--build modular
