@@ -13,7 +13,7 @@ COMMENT=	Developer-friendly WSGI server which uses uwsgi protocol
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-USES=		python
+USES=		python ssl
 USE_PYTHON=	distutils
 USE_RC_SUBR=	uwsgi
 
@@ -25,7 +25,7 @@ PYSETUP=			uwsgiconfig.py
 PYDISTUTILS_BUILD_TARGET=	--build modular
 PYDISTUTILS_BUILDARGS=		--verbose
 
-OPTIONS_DEFINE= CACHE CARBON CGI CHEAPER_BUSYNESS FASTROUTER HTTP LOGFILE LOGSOCKET PYTHON SYSLOG ZERGPOOL
+OPTIONS_DEFINE= CACHE CARBON CGI CHEAPER_BUSYNESS FASTROUTER HTTP LOGFILE LOGSOCKET PYTHON SSLROUTER SYSLOG ZERGPOOL
 
 CACHE_DESC= uwsgi internal cache plugin
 CARBON_DESC= uwsgi plugin to report stats to carbon backend
@@ -36,10 +36,11 @@ HTTP_DESC= add ability to talk to uwsgi processes via http
 LOGFILE_DESC= add ability to log uwsgi events to a file
 LOGSOCKET_DESC= add ability to log uwsgi events to a socket
 PYTHON_DESC= uwsgi python plugin
+SSLROUTER_DESC= add uwsgi support for https routing
 SYSLOG_DESC= add ability to log uwsgi events to syslog
 ZERGPOOL_DESC= a uwsgi method of auto-scaling workers
 
-OPTIONS_DEFAULT=PYTHON SYSLOG HTTP
+OPTIONS_DEFAULT=PYTHON SYSLOG HTTP SSLROUTER
 
 .include <bsd.port.options.mk>
 
@@ -99,6 +100,15 @@ UWSGI_PLUGINS+= http,
 PLIST_SUB+=	HTTP=""
 .else
 PLIST_SUB+=	HTTP="@comment "
+.endif
+
+.if ${PORT_OPTIONS:MSSLROUTER}
+UWSGI_PLUGINS+= sslrouter,
+CFLAGS+=        -I${OPENSSLINC}
+LDFLAGS+=       ${OPENSSL_LDFLAGS}
+PLIST_SUB+=	SSLROUTER=""
+.else
+PLIST_SUB+=	SSLROUTER="@comment "
 .endif
 
 .if ${PORT_OPTIONS:MLOGFILE}
