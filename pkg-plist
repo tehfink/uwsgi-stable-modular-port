@@ -17,6 +17,7 @@ bin/uwsgi
 %%PYTHON%%lib/uwsgi/python_plugin.so
 %%RACK%%lib/uwsgi/rack_plugin.so
 %%RRDTOOL%%lib/uwsgi/rrdtool_plugin.so
+%%SSLROUTER%%lib/uwsgi/router_http_plugin.so
 %%SYSLOG%%lib/uwsgi/syslog_plugin.so
 %%UGREEN%%lib/uwsgi/ugreen_plugin.so
 %%ZERGPOOL%%lib/uwsgi/zergpool_plugin.so
